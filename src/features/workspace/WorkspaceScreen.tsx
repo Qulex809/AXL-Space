@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Project, ProjectFile } from '../../lib/storage/projectRepository';
-import { PixelWolf } from '../../components/mascot/PixelWolf';
+import { PixelWolf, MascotState } from '../../components/mascot/PixelWolf';
 import {
   Play,
   Code,
@@ -15,6 +15,7 @@ import {
   Cpu,
   Layers,
   Terminal,
+  Volume2,
 } from 'lucide-react';
 
 interface WorkspaceScreenProps {
@@ -37,6 +38,7 @@ export const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState(project.name);
   const [inputMessage, setInputMessage] = useState('');
+  const [mascotState, setMascotState] = useState<MascotState>('idle');
 
   const handleSaveName = () => {
     if (editedName.trim()) {
@@ -48,8 +50,22 @@ export const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputMessage.trim()) return;
+
+    // Trigger task sending with mascot running transition
+    setMascotState('running');
     onSendMessage(inputMessage.trim());
     setInputMessage('');
+
+    // After task submission, transition mascot to thinking/idle
+    setTimeout(() => {
+      setMascotState('thinking');
+      setTimeout(() => setMascotState('idle'), 2000);
+    }, 1500);
+  };
+
+  const handleTriggerHowl = () => {
+    if (mascotState === 'howling') return;
+    setMascotState('howling');
   };
 
   return (
@@ -57,7 +73,19 @@ export const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
       {/* Workspace Header */}
       <header className="h-12 border-b border-axl-border bg-axl-panel px-4 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3 min-w-0">
-          <PixelWolf expression="thinking" size="sm" className="shrink-0" />
+          <button
+            onClick={handleTriggerHowl}
+            title="AXL Kurt'u ulut (Howl)"
+            className="focus:outline-none hover:opacity-80 transition-opacity flex items-center gap-1 group"
+          >
+            <PixelWolf
+              state={mascotState}
+              size="sm"
+              className="shrink-0"
+              onHowlComplete={() => setMascotState('idle')}
+            />
+          </button>
+
           {isEditingName ? (
             <div className="flex items-center gap-1">
               <input
@@ -108,6 +136,17 @@ export const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
 
         {/* Status & Tab Navigation Controls */}
         <div className="flex items-center gap-3">
+          {/* Howl Quick Action Button */}
+          <button
+            onClick={handleTriggerHowl}
+            disabled={mascotState === 'howling'}
+            className="hidden sm:inline-flex items-center gap-1.5 px-2 py-1 rounded bg-axl-bg border border-axl-border hover:bg-axl-surface text-[11px] text-axl-muted hover:text-white transition-colors"
+            title="AXL Kurt Ulutması"
+          >
+            <Volume2 className="w-3 h-3 text-axl-muted" />
+            <span>Ulut</span>
+          </button>
+
           {/* AI Model Badge */}
           <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded bg-axl-bg border border-axl-border text-[11px] text-axl-muted font-mono">
             <Cpu className="w-3 h-3 text-zinc-400" />
