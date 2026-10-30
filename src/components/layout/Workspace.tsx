@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Project } from '../../lib/storage/projectRepository';
-import { PixelWolf } from '../mascot/PixelWolf';
+import { PixelWolf, WolfState } from '../mascot/PixelWolf';
+import { useMascotController } from '../mascot/mascotController';
 import {
   Eye,
   Code,
@@ -13,12 +14,18 @@ import {
   FolderTree,
   FileCode,
   Info,
+  Play,
+  Square,
+  Volume2,
 } from 'lucide-react';
 
 interface WorkspaceProps {
   project: Project;
   onUpdateProjectName: (id: string, name: string) => void;
   onAddMessage: (projectId: string, content: string) => void;
+  // External mascot state & controls
+  mascotState?: WolfState;
+  onMascotStateChange?: (state: WolfState) => void;
 }
 
 type TabType = 'preview' | 'code' | 'files';
@@ -27,11 +34,17 @@ export const Workspace: React.FC<WorkspaceProps> = ({
   project,
   onUpdateProjectName,
   onAddMessage,
+  mascotState,
+  onMascotStateChange,
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>('preview');
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState(project.name);
   const [promptInput, setPromptInput] = useState('');
+
+  // Local controller fallback
+  const localController = useMascotController();
+  const effectiveState = mascotState || localController.currentState;
 
   const handleTitleSubmit = () => {
     if (titleDraft.trim()) {
@@ -49,12 +62,34 @@ export const Workspace: React.FC<WorkspaceProps> = ({
     setPromptInput('');
   };
 
+  const handleToggleRunning = () => {
+    if (onMascotStateChange) {
+      onMascotStateChange(effectiveState === 'running' ? 'idle' : 'running');
+    } else {
+      localController.toggleRunningPreview();
+    }
+  };
+
+  const handleHowl = () => {
+    if (onMascotStateChange) {
+      onMascotStateChange('howling');
+      setTimeout(() => onMascotStateChange('idle'), 2600);
+    } else {
+      localController.triggerHowl();
+    }
+  };
+
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden bg-axl-bg text-axl-text">
       {/* Workspace Header */}
       <header className="h-13 px-4 py-2.5 border-b border-axl-border bg-axl-panel flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3 min-w-0">
-          <PixelWolf state="idle" size="sm" />
+          <PixelWolf
+            state={effectiveState}
+            size="sm"
+            showSpeechBubble={effectiveState === 'howling'}
+            speechText="Awoo!"
+          />
           <div className="flex items-center gap-2 min-w-0">
             {isEditingTitle ? (
               <div className="flex items-center gap-1.5">
@@ -112,7 +147,7 @@ export const Workspace: React.FC<WorkspaceProps> = ({
         </div>
       </header>
 
-      {/* Main Workspace Body: Responsive layout */}
+      {/* Main Workspace Body */}
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
         {/* Left Column: Conversation & Task Panel */}
         <section
@@ -237,18 +272,57 @@ export const Workspace: React.FC<WorkspaceProps> = ({
             {activeTab === 'preview' && (
               <div className="max-w-md w-full text-center space-y-4 p-8 rounded-xl border border-axl-border bg-axl-panel/40">
                 <div className="flex justify-center">
-                  <PixelWolf state="thinking" size="xl" />
+                  <PixelWolf
+                    state={effectiveState}
+                    size="xl"
+                    showSpeechBubble={effectiveState === 'howling'}
+                    speechText="Awooooo!"
+                  />
                 </div>
                 <div className="space-y-2">
                   <h3 className="text-sm font-medium text-white">Çalıştırma Motoru Beklemede</h3>
                   <p className="text-xs text-axl-muted leading-relaxed">
-                    Uygulama önizleme ve WebContainer / sandboxed iframe motoru henüz bağlanmadı. Gerçek bir model sağlayıcısı entegre edildiğinde, oluşturulan arayüz burada canlı olarak görüntülenecektir.
+                    Uygulama önizleme ve WebContainer / sandboxed iframe motoru henüz bağlanmadı. Gerçek bir model sağlayıcısı bağlandığında, oluşturulan arayüz burada canlı görüntülenecektir.
                   </p>
                 </div>
-                <div className="pt-2 flex justify-center">
+
+                {/* Interactive Mascot Testing Controls in Workspace */}
+                <div className="pt-2 flex flex-col items-center gap-2">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleToggleRunning}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border transition-colors ${
+                        effectiveState === 'running'
+                          ? 'bg-white text-black border-white'
+                          : 'bg-axl-surface text-axl-text border-axl-border hover:bg-zinc-800'
+                      }`}
+                    >
+                      {effectiveState === 'running' ? (
+                        <>
+                          <Square className="w-3 h-3 fill-current" />
+                          <span>Durdur</span>
+                        </>
+                      ) : (
+                        <>
+                          <Play className="w-3 h-3 fill-current" />
+                          <span>AXL Running</span>
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      onClick={handleHowl}
+                      disabled={effectiveState === 'howling'}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-axl-surface text-axl-text border border-axl-border hover:bg-zinc-800 disabled:opacity-40 transition-colors"
+                    >
+                      <Volume2 className="w-3.5 h-3.5" />
+                      <span>Ulut</span>
+                    </button>
+                  </div>
+
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-axl-surface border border-axl-border text-[11px] text-axl-subtle font-mono">
                     <Terminal className="w-3 h-3" />
-                    <span>status: idle / unconfigured</span>
+                    <span>status: {effectiveState}</span>
                   </div>
                 </div>
               </div>

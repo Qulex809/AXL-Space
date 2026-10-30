@@ -5,6 +5,7 @@ import { HomeScreen } from './components/layout/HomeScreen';
 import { Workspace } from './components/layout/Workspace';
 import { SettingsModal } from './components/layout/SettingsModal';
 import { WolfHelperWidget } from './components/mascot/WolfHelperWidget';
+import { WolfState } from './components/mascot/PixelWolf';
 import { Menu } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -14,6 +15,9 @@ export const App: React.FC = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isHelperOpen, setIsHelperOpen] = useState(false);
+
+  // Global mascot state (shared across workspace, sidebar, helper)
+  const [mascotState, setMascotState] = useState<WolfState>('idle');
 
   // Load projects from local storage on mount
   useEffect(() => {
@@ -115,6 +119,8 @@ export const App: React.FC = () => {
             project={activeProject}
             onUpdateProjectName={handleUpdateProjectName}
             onAddMessage={handleAddMessage}
+            mascotState={mascotState}
+            onMascotStateChange={setMascotState}
           />
         ) : (
           <HomeScreen onCreateProject={handleCreateProject} />
@@ -122,7 +128,12 @@ export const App: React.FC = () => {
       </main>
 
       {/* Wolf Helper Widget (dismissible, bottom right) */}
-      <WolfHelperWidget isOpen={isHelperOpen} onClose={() => setIsHelperOpen(false)} />
+      <WolfHelperWidget
+        isOpen={isHelperOpen}
+        onClose={() => setIsHelperOpen(false)}
+        externalMascotState={mascotState}
+        onMascotStateChange={setMascotState}
+      />
 
       {/* Settings Modal */}
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
