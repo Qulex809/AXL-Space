@@ -16,6 +16,8 @@ export default {
           muted: '#A1A1AA',
           subtle: '#71717A',
           hover: '#202024',
+          primary: '#3B82F6',
+          'primary-hover': '#2563EB',
         }
       },
       fontFamily: {

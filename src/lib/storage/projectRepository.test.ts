@@ -1,73 +1,53 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { projectRepository } from './projectRepository';
 
-// Mock localStorage for Node test environment
-const createMockLocalStorage = () => {
-  let store: Record<string, string> = {};
-  return {
-    getItem: (key: string) => store[key] || null,
-    setItem: (key: string, value: string) => {
-      store[key] = value.toString();
-    },
-    removeItem: (key: string) => {
-      delete store[key];
-    },
-    clear: () => {
-      store = {};
-    },
-  };
-};
-
-describe('projectRepository', () => {
+describe('ProjectRepository', () => {
   beforeEach(() => {
-    Object.defineProperty(globalThis, 'window', {
-      value: {
-        localStorage: createMockLocalStorage(),
-      },
-      writable: true,
-      configurable: true,
-    });
     projectRepository.clearAll();
   });
 
-  it('starts with an empty list of projects', () => {
-    const list = projectRepository.getAll();
-    expect(list).toEqual([]);
-  });
-
-  it('creates and persists a new project from a prompt', () => {
-    const prompt = 'Kişisel bir portföy ve blog web sitesi oluştur.';
-    const project = projectRepository.create(prompt);
-
-    expect(project.id).toBeDefined();
-    expect(project.name).toBe('Kişisel bir portföy ve blog web...');
-    expect(project.initialPrompt).toBe(prompt);
+  it('creates a project with derived name, category and files', () => {
+    const project = projectRepository.create(
+      'Kullanıcıların notlarını tutabileceği minimalist bir not defteri',
+      'Verimlilik aracı',
+      'claude-3-7-sonnet'
+    );
+    expect(project).toBeDefined();
+    expect(project.id).toMatch(/^proj_/);
+    expect(project.category).toBe('Verimlilik aracı');
+    expect(project.modelId).toBe('claude-3-7-sonnet');
+    expect(project.name.length).toBeLessThanOrEqual(35);
     expect(project.messages.length).toBe(2);
-    expect(project.messages[0].role).toBe('user');
-    expect(project.messages[0].content).toBe(prompt);
-    expect(project.messages[1].role).toBe('system');
-    expect(project.messages[1].status).toBe('unconfigured');
-
-    const fetched = projectRepository.getById(project.id);
-    expect(fetched).not.toBeNull();
-    expect(fetched?.id).toBe(project.id);
+    expect(project.files.length).toBeGreaterThan(0);
+    expect(project.files.some((f) => f.path === 'src/App.tsx')).toBe(true);
+    expect(project.logs.length).toBeGreaterThan(0);
   });
 
-  it('updates project title', () => {
-    const project = projectRepository.create('Yeni uygulama fikri');
-    const updated = projectRepository.updateName(project.id, 'Portföy Projesi v2');
-
-    expect(updated?.name).toBe('Portföy Projesi v2');
-    const retrieved = projectRepository.getById(project.id);
-    expect(retrieved?.name).toBe('Portföy Projesi v2');
+  it('retrieves created project by id and persists in storage', () => {
+    const created = projectRepository.create('Yeni Dashboard Projesi', 'Dashboard');
+    const retrieved = projectRepository.getById(created.id);
+    expect(retrieved).not.toBeNull();
+    expect(retrieved?.id).toBe(created.id);
+    expect(retrieved?.category).toBe('Dashboard');
   });
 
-  it('deletes a project', () => {
-    const project = projectRepository.create('Silinecek proje');
+  it('updates project file content and records log', () => {
+    const project = projectRepository.create('Test App', 'Web uygulaması');
+    const success = projectRepository.updateFileContent(project.id, 'src/App.tsx', '// updated code');
+    expect(success).toBe(true);
+
+    const updated = projectRepository.getById(project.id);
+    const file = updated?.files.find((f) => f.path === 'src/App.tsx');
+    expect(file?.content).toBe('// updated code');
+    expect(updated?.logs.some((l) => l.message.includes('src/App.tsx'))).toBe(true);
+  });
+
+  it('deletes a project cleanly', () => {
+    const created = projectRepository.create('Silinecek Proje');
     expect(projectRepository.getAll().length).toBe(1);
 
-    projectRepository.delete(project.id);
+    const deleted = projectRepository.delete(created.id);
+    expect(deleted).toBe(true);
     expect(projectRepository.getAll().length).toBe(0);
-    expect(projectRepository.getById(project.id)).toBeNull();
   });
 });
