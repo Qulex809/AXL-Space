@@ -21,7 +21,7 @@ export const ConsoleDiagnostics: React.FC<ConsoleDiagnosticsProps> = ({ logs, on
       <div className="h-10 px-4 border-b border-axl-border bg-axl-panel flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5 text-zinc-300 font-semibold">
-            <Terminal className="w-3.5 h-3.5 text-blue-400" />
+            <Terminal className="w-3.5 h-3.5 text-zinc-400" />
             <span>Konsol ve Tanılama</span>
           </div>
 
@@ -30,10 +30,10 @@ export const ConsoleDiagnostics: React.FC<ConsoleDiagnosticsProps> = ({ logs, on
               <button
                 key={lvl}
                 onClick={() => setFilter(lvl)}
-                className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold transition-colors ${
+                className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold transition-all duration-150 active:scale-95 ${
                   filter === lvl
-                    ? 'bg-axl-surface text-white border border-axl-border'
-                    : 'text-axl-subtle hover:text-zinc-300'
+                    ? 'bg-white text-black border border-white shadow-sm'
+                    : 'text-zinc-500 hover:text-white hover:bg-zinc-800'
                 }`}
               >
                 {lvl}
@@ -45,7 +45,7 @@ export const ConsoleDiagnostics: React.FC<ConsoleDiagnosticsProps> = ({ logs, on
         {onClearLogs && (
           <button
             onClick={onClearLogs}
-            className="flex items-center gap-1 px-2 py-1 rounded bg-axl-surface hover:bg-axl-hover text-axl-subtle hover:text-white text-[10px] transition-colors"
+            className="flex items-center gap-1 px-2.5 py-1 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-400 hover:text-white text-[10px] transition-all active:scale-95 shadow-btn-subtle"
             title="Konsolu temizle"
           >
             <Trash2 className="w-3 h-3" />
@@ -69,10 +69,10 @@ export const ConsoleDiagnostics: React.FC<ConsoleDiagnosticsProps> = ({ logs, on
                 key={log.id}
                 className={`flex items-start gap-2 p-2 rounded border text-[11px] leading-relaxed ${
                   isError
-                    ? 'bg-red-500/10 border-red-500/30 text-red-300'
+                    ? 'bg-zinc-950 border-red-900/60 text-red-300'
                     : isWarn
-                    ? 'bg-amber-500/10 border-amber-500/30 text-amber-300'
-                    : 'bg-axl-surface/50 border-axl-border/60 text-zinc-300'
+                    ? 'bg-zinc-950 border-amber-900/60 text-amber-300'
+                    : 'bg-zinc-900/50 border-zinc-800 text-zinc-300'
                 }`}
               >
                 {isError ? (
@@ -80,11 +80,11 @@ export const ConsoleDiagnostics: React.FC<ConsoleDiagnosticsProps> = ({ logs, on
                 ) : isWarn ? (
                   <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
                 ) : (
-                  <Info className="w-3.5 h-3.5 text-blue-400 shrink-0 mt-0.5" />
+                  <Info className="w-3.5 h-3.5 text-zinc-400 shrink-0 mt-0.5" />
                 )}
 
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 text-[10px] text-axl-subtle mb-0.5">
+                  <div className="flex items-center gap-2 text-[10px] text-zinc-500 mb-0.5">
                     {log.source && <span className="font-semibold text-zinc-400">[{log.source}]</span>}
                     <span>{new Date(log.timestamp).toLocaleTimeString()}</span>
                   </div>

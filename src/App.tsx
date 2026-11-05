@@ -130,14 +130,14 @@ export const App: React.FC = () => {
         <div className="md:hidden flex items-center justify-between px-4 py-3 bg-axl-panel border-b border-axl-border">
           <button
             onClick={() => setIsMobileSidebarOpen(true)}
-            className="p-1 rounded-md text-axl-muted hover:text-white hover:bg-axl-surface"
+            className="p-1 rounded-md text-axl-muted hover:text-white hover:bg-zinc-800 active:scale-95 transition-all"
             aria-label="Menüyü aç"
           >
             <Menu className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-1.5">
             <span className="text-xs font-bold text-white">AXL Space</span>
-            <span className="text-[10px] font-mono text-blue-400">PRO</span>
+            <span className="text-[10px] font-mono text-zinc-400">PRO</span>
           </div>
           <div className="w-5" />
         </div>

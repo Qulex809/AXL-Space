@@ -34,13 +34,13 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
     <div className="w-56 shrink-0 bg-axl-panel border-r border-axl-border flex flex-col h-full select-none text-xs">
       {/* Explorer Header */}
       <div className="px-3 py-2 border-b border-axl-border flex items-center justify-between">
-        <div className="flex items-center gap-1.5 text-axl-subtle font-semibold uppercase tracking-wider text-[10px]">
-          <FolderTree className="w-3.5 h-3.5" />
+        <div className="flex items-center gap-1.5 text-zinc-400 font-semibold uppercase tracking-wider text-[10px]">
+          <FolderTree className="w-3.5 h-3.5 text-zinc-400" />
           <span>Dosya Gezgini</span>
         </div>
         <button
           onClick={() => setIsAdding(!isAdding)}
-          className="p-1 rounded hover:bg-axl-surface text-axl-subtle hover:text-white transition-colors"
+          className="p-1 rounded hover:bg-zinc-800 text-zinc-400 hover:text-white transition-all active:scale-95"
           title="Yeni dosya ekle"
         >
           <Plus className="w-3.5 h-3.5" />
@@ -49,14 +49,14 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
 
       {/* Add File Input prompt */}
       {isAdding && (
-        <form onSubmit={handleAddSubmit} className="p-2 border-b border-axl-border bg-axl-surface/50">
+        <form onSubmit={handleAddSubmit} className="p-2 border-b border-axl-border bg-zinc-900/60">
           <input
             type="text"
             value={newPathInput}
             onChange={(e) => setNewPathInput(e.target.value)}
             placeholder="src/components/MyComponent.tsx"
             autoFocus
-            className="w-full bg-axl-panel border border-blue-500 rounded px-2 py-1 text-[11px] text-white focus:outline-none"
+            className="w-full bg-black border border-zinc-500 rounded px-2 py-1 text-[11px] text-white focus:outline-none focus:border-white transition-colors"
             onKeyDown={(e) => {
               if (e.key === 'Escape') setIsAdding(false);
             }}
@@ -65,13 +65,13 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
             <button
               type="button"
               onClick={() => setIsAdding(false)}
-              className="px-2 py-0.5 rounded text-axl-subtle hover:text-white"
+              className="px-2 py-0.5 rounded text-zinc-400 hover:text-white transition-colors"
             >
               İptal
             </button>
             <button
               type="submit"
-              className="px-2 py-0.5 rounded bg-blue-600 text-white font-medium"
+              className="px-2.5 py-0.5 rounded bg-white hover:bg-zinc-200 text-black font-semibold shadow-btn-subtle active:scale-95 transition-all"
             >
               Ekle
             </button>
@@ -85,28 +85,28 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
         <div>
           <button
             onClick={() => setIsSrcOpen(!isSrcOpen)}
-            className="w-full flex items-center gap-1.5 px-1.5 py-1 rounded text-zinc-300 hover:bg-axl-surface/70 transition-colors"
+            className="w-full flex items-center gap-1.5 px-1.5 py-1 rounded text-zinc-300 hover:bg-zinc-800 transition-colors"
           >
-            {isSrcOpen ? <ChevronDown className="w-3 h-3 text-axl-subtle" /> : <ChevronRight className="w-3 h-3 text-axl-subtle" />}
-            <Folder className="w-3.5 h-3.5 text-blue-400" />
-            <span className="font-medium">src</span>
+            {isSrcOpen ? <ChevronDown className="w-3 h-3 text-zinc-500" /> : <ChevronRight className="w-3 h-3 text-zinc-500" />}
+            <Folder className="w-3.5 h-3.5 text-zinc-300" />
+            <span className="font-medium text-zinc-200">src</span>
           </button>
 
           {isSrcOpen && (
-            <div className="pl-4 space-y-0.5 mt-0.5 border-l border-axl-border/60 ml-2.5">
+            <div className="pl-4 space-y-0.5 mt-0.5 border-l border-zinc-800 ml-2.5">
               {srcFiles.map((file) => {
                 const isActive = file.path === activeFilePath;
                 return (
                   <button
                     key={file.path}
                     onClick={() => onSelectFile(file.path)}
-                    className={`w-full flex items-center gap-2 px-2 py-1 rounded transition-colors text-left truncate ${
+                    className={`w-full flex items-center gap-2 px-2 py-1 rounded transition-all text-left truncate active:scale-[0.99] ${
                       isActive
-                        ? 'bg-blue-600/20 text-blue-300 border border-blue-500/30'
-                        : 'text-axl-muted hover:text-white hover:bg-axl-surface'
+                        ? 'bg-zinc-800 text-white font-medium border border-zinc-600 shadow-sm'
+                        : 'text-zinc-400 hover:text-white hover:bg-zinc-900 border border-transparent'
                     }`}
                   >
-                    <FileCode className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-blue-400' : 'text-axl-subtle'}`} />
+                    <FileCode className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-white' : 'text-zinc-500'}`} />
                     <span className="truncate">{file.name}</span>
                   </button>
                 );
@@ -123,13 +123,13 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
               <button
                 key={file.path}
                 onClick={() => onSelectFile(file.path)}
-                className={`w-full flex items-center gap-2 px-2 py-1 rounded transition-colors text-left truncate ${
+                className={`w-full flex items-center gap-2 px-2 py-1 rounded transition-all text-left truncate active:scale-[0.99] ${
                   isActive
-                    ? 'bg-blue-600/20 text-blue-300 border border-blue-500/30'
-                    : 'text-axl-muted hover:text-white hover:bg-axl-surface'
+                    ? 'bg-zinc-800 text-white font-medium border border-zinc-600 shadow-sm'
+                    : 'text-zinc-400 hover:text-white hover:bg-zinc-900 border border-transparent'
                 }`}
               >
-                <FileText className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-blue-400' : 'text-axl-subtle'}`} />
+                <FileText className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-white' : 'text-zinc-500'}`} />
                 <span className="truncate">{file.name}</span>
               </button>
             );

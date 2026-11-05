@@ -27,8 +27,9 @@ export const BrowserPreview: React.FC<BrowserPreviewProps> = ({ files, projectNa
     </style>
   </head>
   <body class="p-6 flex flex-col items-center justify-center min-h-screen">
-    <div class="max-w-md w-full bg-[#18181B] border border-[#29292E] rounded-xl p-6 text-center space-y-4 shadow-xl">
-      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs font-semibold border border-blue-500/20">
+    <div class="max-w-md w-full bg-[#18181B] border border-[#29292E] rounded-xl p-6 text-center space-y-4 shadow-2xl">
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-800 text-zinc-300 text-xs font-semibold border border-zinc-700">
+        <span class="w-1.5 h-1.5 rounded-full bg-white inline-block"></span>
         <span>Canlı Sanal Önizleme</span>
       </div>
       <h2 class="text-xl font-bold text-white tracking-tight">${projectName}</h2>
@@ -36,7 +37,7 @@ export const BrowserPreview: React.FC<BrowserPreviewProps> = ({ files, projectNa
         Bu önizleme, AXL Space sanal dosya sisteminden derlenmiştir.
       </p>
       <div class="pt-2">
-        <button id="btn" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-lg transition-colors shadow">
+        <button id="btn" class="px-5 py-2.5 bg-white hover:bg-zinc-200 active:bg-zinc-300 text-black text-xs font-bold rounded-lg transition-all duration-150 shadow-md active:scale-95 cursor-pointer">
           Tıklama: <span id="num">0</span>
         </button>
       </div>
@@ -59,30 +60,30 @@ export const BrowserPreview: React.FC<BrowserPreviewProps> = ({ files, projectNa
         <div className="flex items-center gap-2">
           <button
             onClick={() => setKey((k) => k + 1)}
-            className="p-1 rounded hover:bg-axl-surface text-axl-subtle hover:text-white transition-colors"
+            className="p-1 rounded hover:bg-zinc-800 text-zinc-400 hover:text-white transition-all active:scale-95"
             title="Yeniden Yükle"
           >
             <RotateCw className="w-3.5 h-3.5" />
           </button>
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded bg-[#09090B] border border-axl-border text-[11px] font-mono text-zinc-300">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded bg-[#09090B] border border-zinc-800 text-[11px] font-mono text-zinc-300">
+            <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
             <span>https://axl-space.local/preview</span>
           </div>
         </div>
 
         {/* Viewport controls */}
         <div className="flex items-center gap-1.5">
-          <div className="flex items-center p-0.5 rounded bg-axl-surface border border-axl-border">
+          <div className="flex items-center p-0.5 rounded bg-zinc-900 border border-zinc-800">
             <button
               onClick={() => setViewport('desktop')}
-              className={`p-1 rounded ${viewport === 'desktop' ? 'bg-blue-600 text-white' : 'text-axl-subtle hover:text-white'}`}
+              className={`p-1 rounded transition-all active:scale-95 ${viewport === 'desktop' ? 'bg-white text-black shadow-sm' : 'text-zinc-400 hover:text-white'}`}
               title="Masaüstü görünümü"
             >
               <Monitor className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => setViewport('mobile')}
-              className={`p-1 rounded ${viewport === 'mobile' ? 'bg-blue-600 text-white' : 'text-axl-subtle hover:text-white'}`}
+              className={`p-1 rounded transition-all active:scale-95 ${viewport === 'mobile' ? 'bg-white text-black shadow-sm' : 'text-zinc-400 hover:text-white'}`}
               title="Mobil görünümü"
             >
               <Smartphone className="w-3.5 h-3.5" />
@@ -94,7 +95,7 @@ export const BrowserPreview: React.FC<BrowserPreviewProps> = ({ files, projectNa
       {/* Frame Container */}
       <div className="flex-1 p-4 flex items-center justify-center bg-[#070708] overflow-auto">
         <div
-          className={`h-full bg-black rounded-lg border border-axl-border shadow-2xl overflow-hidden transition-all duration-300 ${
+          className={`h-full bg-black rounded-lg border border-zinc-800 shadow-2xl overflow-hidden transition-all duration-300 ${
             viewport === 'mobile' ? 'w-[375px] max-h-[720px]' : 'w-full'
           }`}
         >

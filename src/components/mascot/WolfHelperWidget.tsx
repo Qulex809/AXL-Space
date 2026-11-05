@@ -1,30 +1,30 @@
 import React, { useState } from 'react';
 import { PixelWolf, WolfState } from './PixelWolf';
 import { useMascotController } from './mascotController';
-import { X, ChevronRight, Lightbulb, Play, Square, Volume2, CheckCircle2, AlertCircle } from 'lucide-react';
-
-const TIPS = [
-  {
-    title: 'Fikrini net ve adım adım açıkla',
-    description: 'Önce uygulamanın ana amacını, ardından temel sayfaları veya bileşenleri belirtmek en iyi sonuca götürür.',
-  },
-  {
-    title: 'Teknolojileri belirtebilirsin',
-    description: 'React, Tailwind, TypeScript gibi tercih ettiğin kütüphaneleri veya veri modellerini doğrudan yazabilirsin.',
-  },
-  {
-    title: 'Projeleri modüler tut',
-    description: 'Büyük fikirleri parça parça inşa etmek, hızlı prototipleme ve test süreçlerini kolaylaştırır.',
-  },
-];
+import { X, Play, Square, ChevronRight, HelpCircle, Volume2 } from 'lucide-react';
 
 interface WolfHelperWidgetProps {
   isOpen: boolean;
   onClose: () => void;
-  // Optional external mascot controller if controlled from parent
+  // Optional external state sync
   externalMascotState?: WolfState;
   onMascotStateChange?: (state: WolfState) => void;
 }
+
+const TIPS = [
+  {
+    title: 'Fikrini net ve adım adım açıkla',
+    desc: 'Önce uygulamanın ana amacını, ardından temel sayfaları veya bileşenleri belirtmek en iyi sonucu götürür.',
+  },
+  {
+    title: 'Modüler dosya yapısını koru',
+    desc: 'Tek bir devasa dosya yerine, bileşenleri, veri servislerini ve yardımcı fonksiyonları ayrı dosyalarda tut.',
+  },
+  {
+    title: 'Monokrom & odaklanmış tasarım',
+    desc: 'Gereksiz renk karmaşasından kaçın. Siyah, gri ve beyaz kontrastı zihinsel berraklık sağlar.',
+  },
+];
 
 export const WolfHelperWidget: React.FC<WolfHelperWidgetProps> = ({
   isOpen,
@@ -34,46 +34,53 @@ export const WolfHelperWidget: React.FC<WolfHelperWidgetProps> = ({
 }) => {
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
 
-  const localController = useMascotController();
-  const effectiveState = externalMascotState || localController.currentState;
+  // Reusable controller hook
+  const mascotController = useMascotController();
+
+  const effectiveState = externalMascotState || mascotController.currentState;
 
   if (!isOpen) return null;
 
-  const tip = TIPS[currentTipIndex];
+  const nextTip = () => {
+    setCurrentTipIndex((prev) => (prev + 1) % TIPS.length);
+  };
+
+  const currentTip = TIPS[currentTipIndex];
 
   const handleToggleRunning = () => {
     if (onMascotStateChange) {
-      onMascotStateChange(effectiveState === 'running' ? 'idle' : 'running');
+      const next = effectiveState === 'running' ? 'idle' : 'running';
+      onMascotStateChange(next);
     } else {
-      localController.toggleRunningPreview();
+      mascotController.toggleRunningPreview();
     }
   };
 
-  const handleHowl = () => {
+  const handleTriggerHowl = () => {
     if (onMascotStateChange) {
       onMascotStateChange('howling');
       setTimeout(() => onMascotStateChange('idle'), 2600);
     } else {
-      localController.triggerHowl();
+      mascotController.triggerHowl();
     }
   };
 
-  const handleSetState = (st: WolfState) => {
+  const handleSetState = (state: WolfState) => {
     if (onMascotStateChange) {
-      onMascotStateChange(st);
+      onMascotStateChange(state);
     } else {
-      localController.setState(st);
+      mascotController.setState(state);
     }
   };
 
   return (
     <div
       role="complementary"
-      aria-label="AXL Wolf ipucu asistanı"
-      className="fixed bottom-5 right-5 z-40 w-84 max-w-[calc(100vw-2.5rem)] rounded-xl border border-axl-border bg-axl-surface p-4 shadow-2xl backdrop-blur transition-all duration-200"
+      aria-label="AXL Space Kurt Yardımcısı"
+      className="fixed bottom-4 right-4 z-40 w-80 sm:w-96 rounded-xl bg-[#111113] border border-zinc-800 shadow-2xl p-4 text-axl-text select-none animate-in fade-in slide-in-from-bottom-2 duration-200"
     >
-      {/* Header */}
-      <div className="flex items-start justify-between gap-2 pb-3 border-b border-axl-border/60">
+      {/* Widget Header */}
+      <div className="flex items-start justify-between gap-3 border-b border-zinc-800 pb-3">
         <div className="flex items-center gap-2.5">
           <PixelWolf
             state={effectiveState}
@@ -82,42 +89,41 @@ export const WolfHelperWidget: React.FC<WolfHelperWidgetProps> = ({
             speechText="Awooo~!"
           />
           <div>
-            <h4 className="text-xs font-medium text-axl-text flex items-center gap-1.5">
-              <span>AXL Wolf Companion</span>
-              <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-mono text-zinc-300 bg-axl-panel border border-axl-border">
+            <div className="flex items-center gap-1.5">
+              <span className="font-semibold text-xs text-white">AXL Wolf Companion</span>
+              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-black text-zinc-400 border border-zinc-800">
                 {effectiveState}
               </span>
-            </h4>
-            <p className="text-[11px] text-axl-subtle">Vibe coding için dijital yoldaş</p>
+            </div>
+            <p className="text-[11px] text-zinc-400">Vibe coding için dijital yoldaş</p>
           </div>
         </div>
+
         <button
           onClick={onClose}
-          className="text-axl-subtle hover:text-axl-text p-1 rounded-md hover:bg-axl-hover transition-colors"
-          aria-label="Rehberi kapat"
+          className="p-1 rounded text-zinc-500 hover:text-white hover:bg-zinc-800 transition-all active:scale-95"
+          aria-label="Yardımcıyı kapat"
         >
           <X className="w-4 h-4" />
         </button>
       </div>
 
-      {/* Mascot Interactive Animation Controls */}
-      <div className="py-2.5 px-3 my-2.5 rounded-lg bg-axl-panel/80 border border-axl-border/80 space-y-2">
-        <div className="flex items-center justify-between text-[11px] text-axl-subtle font-mono">
+      {/* Mascot Animation Controls with Lively Buttons */}
+      <div className="py-2.5 border-b border-zinc-800/80">
+        <div className="flex items-center justify-between text-[11px] text-zinc-500 mb-1.5 font-mono">
           <span>Maskot Animasyonları</span>
-          <span className="text-[10px] text-zinc-400">Önizleme</span>
+          <span>Önizleme</span>
         </div>
 
-        <div className="flex flex-wrap items-center gap-1.5">
-          {/* AXL Running Toggle */}
+        <div className="flex items-center gap-2">
+          {/* Running loop toggle */}
           <button
             onClick={handleToggleRunning}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium border transition-colors ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-bold transition-all duration-150 active:scale-95 ${
               effectiveState === 'running'
-                ? 'bg-white text-black border-white'
-                : 'bg-axl-surface text-axl-text border-axl-border hover:bg-zinc-800'
+                ? 'bg-white text-black shadow-btn-glow border border-white'
+                : 'bg-zinc-900 text-zinc-300 border border-zinc-700 hover:text-white hover:bg-zinc-800 shadow-btn-subtle'
             }`}
-            aria-label="AXL Running animasyonunu başlat veya durdur"
-            title="AXL Running animasyonu"
           >
             {effectiveState === 'running' ? (
               <>
@@ -132,81 +138,67 @@ export const WolfHelperWidget: React.FC<WolfHelperWidgetProps> = ({
             )}
           </button>
 
-          {/* Howl (Ulut) Action */}
+          {/* Howl one-shot button */}
           <button
-            onClick={handleHowl}
+            onClick={handleTriggerHowl}
             disabled={effectiveState === 'howling'}
-            className="flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium bg-axl-surface text-axl-text border border-axl-border hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             aria-label="Ulut"
             title="Kurt uluma animasyonu"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-bold bg-zinc-900 text-zinc-300 border border-zinc-700 hover:text-white hover:bg-zinc-800 shadow-btn-subtle active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150"
           >
-            <Volume2 className="w-3 h-3" />
+            <Volume2 className="w-3.5 h-3.5" />
             <span>Ulut</span>
           </button>
+        </div>
 
-          {/* Quick expression buttons */}
-          <div className="flex items-center gap-1 ml-auto">
-            <button
-              onClick={() => handleSetState('idle')}
-              className={`p-1 rounded text-xs border ${
-                effectiveState === 'idle'
-                  ? 'border-zinc-300 text-white bg-zinc-800'
-                  : 'border-transparent text-axl-subtle hover:text-white'
-              }`}
-              title="Idle"
-              aria-label="Idle pozuna geç"
-            >
-              Idle
-            </button>
-            <button
-              onClick={() => handleSetState('success')}
-              className={`p-1 rounded text-xs border ${
-                effectiveState === 'success'
-                  ? 'border-zinc-300 text-white bg-zinc-800'
-                  : 'border-transparent text-axl-subtle hover:text-white'
-              }`}
-              title="Success"
-              aria-label="Başarı pozuna geç"
-            >
-              <CheckCircle2 className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => handleSetState('error')}
-              className={`p-1 rounded text-xs border ${
-                effectiveState === 'error'
-                  ? 'border-zinc-300 text-white bg-zinc-800'
-                  : 'border-transparent text-axl-subtle hover:text-white'
-              }`}
-              title="Error"
-              aria-label="Hata pozuna geç"
-            >
-              <AlertCircle className="w-3.5 h-3.5" />
-            </button>
+        {/* State Quick Selectors */}
+        <div className="flex items-center justify-end gap-1.5 mt-2 text-[10px] text-zinc-400">
+          <button
+            onClick={() => handleSetState('idle')}
+            className={`px-1.5 py-0.5 rounded transition-all active:scale-95 ${effectiveState === 'idle' ? 'bg-zinc-800 text-white font-semibold' : 'hover:text-zinc-200'}`}
+          >
+            Idle
+          </button>
+          <button
+            onClick={() => handleSetState('success')}
+            className={`px-1.5 py-0.5 rounded transition-all active:scale-95 ${effectiveState === 'success' ? 'bg-zinc-800 text-white font-semibold' : 'hover:text-zinc-200'}`}
+          >
+            ✓
+          </button>
+          <button
+            onClick={() => handleSetState('error')}
+            className={`px-1.5 py-0.5 rounded transition-all active:scale-95 ${effectiveState === 'error' ? 'bg-zinc-800 text-white font-semibold' : 'hover:text-zinc-200'}`}
+          >
+            !
+          </button>
+        </div>
+      </div>
+
+      {/* Tip Content */}
+      <div className="pt-3 space-y-2">
+        <div className="flex items-start gap-2">
+          <HelpCircle className="w-3.5 h-3.5 text-zinc-400 shrink-0 mt-0.5" />
+          <div className="min-w-0 flex-1">
+            <h4 className="text-xs font-medium text-white">{currentTip.title}</h4>
+            <p className="text-[11px] text-zinc-400 mt-1 leading-relaxed">
+              {currentTip.desc}
+            </p>
           </div>
         </div>
-      </div>
 
-      {/* Tip of the day */}
-      <div className="py-2">
-        <div className="flex items-start gap-2 mb-1">
-          <Lightbulb className="w-3.5 h-3.5 text-zinc-300 mt-0.5 shrink-0" />
-          <h5 className="text-xs font-semibold text-axl-text">{tip.title}</h5>
+        {/* Tip Pagination */}
+        <div className="flex items-center justify-between pt-2 text-[10px] text-zinc-500">
+          <span>
+            {currentTipIndex + 1} / {TIPS.length}
+          </span>
+          <button
+            onClick={nextTip}
+            className="flex items-center gap-1 text-zinc-300 hover:text-white transition-colors active:scale-95 font-semibold"
+          >
+            <span>Sonraki ipucu</span>
+            <ChevronRight className="w-3 h-3" />
+          </button>
         </div>
-        <p className="text-xs text-axl-muted leading-relaxed pl-5">{tip.description}</p>
-      </div>
-
-      {/* Footer pagination */}
-      <div className="flex items-center justify-between pt-2 border-t border-axl-border/40 text-[11px]">
-        <span className="text-axl-subtle font-mono">
-          {currentTipIndex + 1} / {TIPS.length}
-        </span>
-        <button
-          onClick={() => setCurrentTipIndex((prev) => (prev + 1) % TIPS.length)}
-          className="inline-flex items-center gap-1 text-axl-text hover:text-white font-medium hover:underline"
-        >
-          <span>Sonraki ipucu</span>
-          <ChevronRight className="w-3 h-3" />
-        </button>
       </div>
     </div>
   );
