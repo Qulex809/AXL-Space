@@ -1,19 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { projectRepository, Project } from './lib/storage/projectRepository';
-import { Sidebar } from './components/layout/Sidebar';
+import { projectRepository, Project, ProjectCategory } from './lib/storage/projectRepository';
+import { Sidebar, MainNavView } from './components/layout/Sidebar';
 import { HomeScreen } from './components/layout/HomeScreen';
 import { Workspace } from './components/layout/Workspace';
 import { SettingsModal } from './components/layout/SettingsModal';
 import { WolfHelperWidget } from './components/mascot/WolfHelperWidget';
+import { WolfState } from './components/mascot/PixelWolf';
+import { ProjectsView } from './components/layout/ProjectsView';
+import { AssistantsView } from './components/layout/AssistantsView';
+import { TemplatesView } from './components/layout/TemplatesView';
 import { Menu } from 'lucide-react';
 
 export const App: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
+  const [activeNavView, setActiveNavView] = useState<MainNavView>('home');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isHelperOpen, setIsHelperOpen] = useState(false);
+
+  // Global mascot state (shared across workspace, sidebar, helper)
+  const [mascotState, setMascotState] = useState<WolfState>('idle');
 
   // Load projects from local storage on mount
   useEffect(() => {
@@ -21,8 +29,12 @@ export const App: React.FC = () => {
     setProjects(stored);
   }, []);
 
-  const handleCreateProject = (prompt: string) => {
-    const newProject = projectRepository.create(prompt);
+  const handleCreateProject = (
+    prompt: string,
+    category: ProjectCategory = 'Web uygulaması',
+    modelId = 'gemini-1.5-pro'
+  ) => {
+    const newProject = projectRepository.create(prompt, category, modelId);
     setProjects(projectRepository.getAll());
     setActiveProjectId(newProject.id);
   };
@@ -33,6 +45,7 @@ export const App: React.FC = () => {
 
   const handleNewProject = () => {
     setActiveProjectId(null);
+    setActiveNavView('home');
   };
 
   const handleDeleteProject = (id: string, e: React.MouseEvent) => {
@@ -42,6 +55,7 @@ export const App: React.FC = () => {
     setProjects(updated);
     if (activeProjectId === id) {
       setActiveProjectId(null);
+      setActiveNavView('projects');
     }
   };
 
@@ -64,13 +78,23 @@ export const App: React.FC = () => {
     const sysMsg = {
       id: `msg_${Date.now()}_s`,
       role: 'system' as const,
-      content: 'Talimat alındı. Model sağlayıcısı henüz yapılandırılmadığı için işlem sıraya alındı.',
+      content: 'Talimat alındı. Model sağlayıcısı henüz yapılandırılmadığı için kod üretimi yerel bekleme modunda sıraya alındı.',
       timestamp: new Date().toISOString(),
       status: 'unconfigured' as const,
     };
 
     project.messages.push(userMsg, sysMsg);
     projectRepository.save(project);
+    setProjects(projectRepository.getAll());
+  };
+
+  const handleUpdateFile = (projectId: string, path: string, content: string) => {
+    projectRepository.updateFileContent(projectId, path, content);
+    setProjects(projectRepository.getAll());
+  };
+
+  const handleAddFile = (projectId: string, path: string) => {
+    projectRepository.addFile(projectId, path);
     setProjects(projectRepository.getAll());
   };
 
@@ -84,6 +108,11 @@ export const App: React.FC = () => {
       <Sidebar
         projects={projects}
         activeProjectId={activeProjectId}
+        activeNavView={activeNavView}
+        onNavigate={(view) => {
+          setActiveProjectId(null);
+          setActiveNavView(view);
+        }}
         onSelectProject={handleSelectProject}
         onNewProject={handleNewProject}
         onDeleteProject={handleDeleteProject}
@@ -101,12 +130,15 @@ export const App: React.FC = () => {
         <div className="md:hidden flex items-center justify-between px-4 py-3 bg-axl-panel border-b border-axl-border">
           <button
             onClick={() => setIsMobileSidebarOpen(true)}
-            className="p-1 rounded-md text-axl-muted hover:text-white hover:bg-axl-surface"
+            className="p-1 rounded-md text-axl-muted hover:text-white hover:bg-zinc-800 active:scale-95 transition-all"
             aria-label="Menüyü aç"
           >
             <Menu className="w-5 h-5" />
           </button>
-          <span className="text-xs font-semibold text-white">AXL Space</span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-bold text-white">AXL Space</span>
+            <span className="text-[10px] font-mono text-zinc-400">PRO</span>
+          </div>
           <div className="w-5" />
         </div>
 
@@ -115,14 +147,41 @@ export const App: React.FC = () => {
             project={activeProject}
             onUpdateProjectName={handleUpdateProjectName}
             onAddMessage={handleAddMessage}
+            onUpdateFileContent={handleUpdateFile}
+            onAddFile={handleAddFile}
+            mascotState={mascotState}
+            onMascotStateChange={setMascotState}
+          />
+        ) : activeNavView === 'projects' ? (
+          <ProjectsView
+            projects={projects}
+            onSelectProject={handleSelectProject}
+            onNewProject={handleNewProject}
+            onDeleteProject={handleDeleteProject}
+          />
+        ) : activeNavView === 'assistants' ? (
+          <AssistantsView />
+        ) : activeNavView === 'templates' ? (
+          <TemplatesView
+            onSelectTemplate={(prompt, category) => {
+              handleCreateProject(prompt, category);
+            }}
           />
         ) : (
-          <HomeScreen onCreateProject={handleCreateProject} />
+          <HomeScreen
+            onCreateProject={handleCreateProject}
+            onOpenTemplates={() => setActiveNavView('templates')}
+          />
         )}
       </main>
 
       {/* Wolf Helper Widget (dismissible, bottom right) */}
-      <WolfHelperWidget isOpen={isHelperOpen} onClose={() => setIsHelperOpen(false)} />
+      <WolfHelperWidget
+        isOpen={isHelperOpen}
+        onClose={() => setIsHelperOpen(false)}
+        externalMascotState={mascotState}
+        onMascotStateChange={setMascotState}
+      />
 
       {/* Settings Modal */}
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />

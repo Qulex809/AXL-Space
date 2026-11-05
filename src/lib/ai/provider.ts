@@ -1,68 +1,61 @@
-import { AIProvider, GenerationRequest, GenerationResult, ModelOption } from './types';
-
 /**
- * UnconfiguredProvider: Default placeholder provider when no real API keys
- * or backend proxy are configured. It gracefully communicates the integration state
- * without silently fabricating output or pretending an app has been generated.
+ * AXL Space Provider Registry
+ * Concrete fallback provider returning explicit 'unconfigured' state.
  */
-export class UnconfiguredProvider implements AIProvider {
-  public id = 'unconfigured';
-  public name = 'Yapılandırılmamış Sağlayıcı';
+import {
+  AIProvider,
+  ModelDefinition,
+  ModelProviderId,
+  PromptPayload,
+  ProviderResponse,
+  SUPPORTED_MODELS,
+} from './types';
 
-  public isConfigured(): boolean {
+export class UnconfiguredProvider implements AIProvider {
+  id: ModelProviderId;
+  name: string;
+
+  constructor(id: ModelProviderId = 'gemini', name = 'Google Gemini') {
+    this.id = id;
+    this.name = name;
+  }
+
+  isConfigured(): boolean {
     return false;
   }
 
-  public getAvailableModels(): ModelOption[] {
-    return [
-      {
-        id: 'gemini-2.5-flash',
-        name: 'Gemini 2.5 Flash',
-        provider: 'gemini',
-        isAvailable: false,
-        description: 'Google AI Studio / Gemini API entegrasyonu henüz yapılandırılmadı.',
-      },
-      {
-        id: 'claude-3-7-sonnet',
-        name: 'Claude 3.7 Sonnet',
-        provider: 'anthropic',
-        isAvailable: false,
-        description: 'Anthropic API entegrasyonu henüz yapılandırılmadı.',
-      },
-    ];
+  getAvailableModels(): ModelDefinition[] {
+    return SUPPORTED_MODELS;
   }
 
-  public async generateCode(_request: GenerationRequest): Promise<GenerationResult> {
+  async generateCode(payload: PromptPayload): Promise<ProviderResponse> {
     return {
       success: false,
-      message: 'Yapay zeka sağlayıcısı henüz yapılandırılmadı. Google AI Studio veya API anahtarı ayarları eklendiğinde kod üretimi aktif hale gelecektir.',
-      fileChanges: [],
+      message: `${this.name} sağlayıcısı henüz yapılandırılmadı. Ayarlar panelinden veya Google AI Studio ortamından API anahtarı ekleyiniz.`,
+      suggestedFiles: [],
       error: {
         code: 'UNCONFIGURED',
-        message: 'No AI provider is connected.',
-        suggestion: 'Ayarlar menüsünden veya Google AI Studio Build ortamından model sağlayıcısını bağlayabilirsiniz.',
+        message: `Model '${payload.modelId || this.id}' için geçerli bir API anahtarı bulunamadı. Vibe coding motoru yerel bekleme modundadır.`,
       },
     };
   }
 }
 
-/**
- * Central AI provider factory / registry instance
- */
-class AIServiceManager {
-  private activeProvider: AIProvider;
+export class AIService {
+  private currentProvider: AIProvider;
 
   constructor() {
-    this.activeProvider = new UnconfiguredProvider();
+    this.currentProvider = new UnconfiguredProvider();
   }
 
-  public getProvider(): AIProvider {
-    return this.activeProvider;
+  getProvider(): AIProvider {
+    return this.currentProvider;
   }
 
-  public setProvider(provider: AIProvider): void {
-    this.activeProvider = provider;
+  setProvider(provider: AIProvider): void {
+    this.currentProvider = provider;
   }
 }
 
-export const aiService = new AIServiceManager();
+export const aiService = new AIService();
+export const defaultAIProvider = aiService.getProvider();

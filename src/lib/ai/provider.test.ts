@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { aiService, UnconfiguredProvider } from './provider';
+import { ModelDefinition } from './types';
 
 describe('AI Provider Abstraction', () => {
   it('defaults to an UnconfiguredProvider', () => {
@@ -9,22 +10,21 @@ describe('AI Provider Abstraction', () => {
   });
 
   it('lists available candidate models with unconfigured flag', () => {
-    const provider = aiService.getProvider();
-    const models = provider.getAvailableModels();
+    const provider = aiService.getProvider() as UnconfiguredProvider;
+    const models: ModelDefinition[] = provider.getAvailableModels();
     expect(models.length).toBeGreaterThan(0);
-    expect(models.some((m) => m.id.includes('gemini'))).toBe(true);
-    expect(models.every((m) => m.isAvailable === false)).toBe(true);
+    expect(models.some((m: ModelDefinition) => m.id.includes('gemini'))).toBe(true);
+    expect(models.every((m: ModelDefinition) => m.isAvailable === false)).toBe(true);
   });
 
   it('returns explicit unconfigured error on generateCode call without fabricating data', async () => {
     const provider = aiService.getProvider();
     const result = await provider.generateCode({
-      projectId: 'proj_test',
       prompt: 'Build a calculator',
     });
 
     expect(result.success).toBe(false);
-    expect(result.fileChanges).toEqual([]);
+    expect(result.suggestedFiles).toEqual([]);
     expect(result.error?.code).toBe('UNCONFIGURED');
   });
 });
